@@ -1,16 +1,17 @@
 /*
-  WiFi UDP Send and Receive String
+ Run this on an Arduino with a WiFi Shield.
+ in a terminal run
+     nc -u [shield's ip] 2930
+ send l to sim. lock and u to sim. unlock. a light will blink. 
 
+ based on:
+ WiFi UDP Send and Receive String
  This sketch wait an UDP packet on localPort using a WiFi shield.
  When a packet is received an Acknowledge packet is sent to the client on port remotePort
 
- Circuit:
- * WiFi shield attached
-
  created 30 December 2012
  by dlf (Metodo2 srl)
-
- remo
+ blinking for testing added by Joshua
  */
 
 
