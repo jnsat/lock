@@ -1,0 +1,18 @@
+var arrayBuffer = 'l';
+// Create the Socket
+chrome.sockets.udp.create({}, function(socketInfo) {
+  // The socket is created, now we can send some data
+  var socketId = socketInfo.socketId;
+  chrome.sockets.udp.send(socketId, arrayBuffer,
+    '192.168.1.129', 2390, function(sendInfo) {
+      console.log("sent " + sendInfo.bytesSent);
+  });
+});
+
+/* permissions for chrome. if the socket plugin has been ported from chrome c(something) apps this doesn't have to be added to manifest.json in chrome
+"sockets": {
+"udp": { "send" : ":*" }
+}
+*/
+https://github.com/MobileChromeApps/cordova-plugin-chrome-apps-sockets-udp
+uses chrome.sockets. chrome.socket is deprecated...
