@@ -9,11 +9,11 @@
                 "parents": {
                     "/*": [
                         {
-                            "xml": "<feature name=\"Keyboard\"><param name=\"android-package\" value=\"com.ionic.keyboard.IonicKeyboard\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "xml": "<feature name=\"Device\"><param name=\"android-package\" value=\"org.apache.cordova.device.Device\" /></feature>",
                             "count": 1
                         },
                         {
-                            "xml": "<feature name=\"Device\"><param name=\"android-package\" value=\"org.apache.cordova.device.Device\" /></feature>",
+                            "xml": "<feature name=\"Whitelist\"><param name=\"android-package\" value=\"org.apache.cordova.whitelist.WhitelistPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
                             "count": 1
                         },
                         {
@@ -21,7 +21,11 @@
                             "count": 1
                         },
                         {
-                            "xml": "<feature name=\"Whitelist\"><param name=\"android-package\" value=\"org.apache.cordova.whitelist.WhitelistPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "xml": "<feature name=\"Keyboard\"><param name=\"android-package\" value=\"com.ionic.keyboard.IonicKeyboard\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<preference name=\"webView\" value=\"org.crosswalk.engine.XWalkWebViewEngine\" />",
                             "count": 1
                         }
                     ],
@@ -36,22 +40,25 @@
         }
     },
     "installed_plugins": {
-        "com.ionic.keyboard": {
+        "cordova-plugin-device": {
             "PACKAGE_NAME": "com.ionicframework.key663508"
         },
         "cordova-plugin-console": {
             "PACKAGE_NAME": "com.ionicframework.key663508"
         },
-        "cordova-plugin-device": {
+        "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "com.ionicframework.key663508"
         },
         "cordova-plugin-splashscreen": {
             "PACKAGE_NAME": "com.ionicframework.key663508"
         },
-        "cordova-plugin-whitelist": {
+        "com.ionic.keyboard": {
             "PACKAGE_NAME": "com.ionicframework.key663508"
         },
         "cordova-plugin-chrome-apps-sockets-udp": {
+            "PACKAGE_NAME": "com.ionicframework.key663508"
+        },
+        "cordova-plugin-crosswalk-webview": {
             "PACKAGE_NAME": "com.ionicframework.key663508"
         }
     },

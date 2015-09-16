@@ -1,19 +1,26 @@
-// Ionic Starter App
+angular.module('key', ['ionic'])
+//.factory('udpfact')
+.controller('keyctrl', ['$scope', 'chrome', function($scope, chrome) {
+  //nothin
+}])
+  .run(function($ionicPlatform, $timeout) {
+    alert("runnin");
+    $ionicPlatform.ready(function() {
+      alert('window.cordova: ' + Object.keys(window.cordova).join(', '));
+      alert('window.cordova: ' + Object.keys(window.cordova.plugins).join(', '));
+      alert(JSON.stringify(window.cordova));
+      alert(JSON.stringify(window.cordova.plugins));
 
-// angular.module is a global place for creating, registering and retrieving Angular modules
-// 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
-// the 2nd parameter is an array of 'requires'
-angular.module('starter', ['ionic'])
-
-.run(function($ionicPlatform) {
-  $ionicPlatform.ready(function() {
-    // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-    // for form inputs)
-    if(window.cordova && window.cordova.plugins.Keyboard) {
-      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-    }
-    if(window.StatusBar) {
-      StatusBar.styleDefault();
-    }
+      alert("printed windows.cordova");
+      $scope.sendcmd = function sendcmd(cmd) {
+        alert("cmd: " + cmd);
+        chrome.sockets.udp.create({}, function(socketInfo) {
+          var socketId = socketInfo.socketId;
+          chrome.sockets.udp.send(socketId, cmd,
+            '10.0.0.9', 2390, function(sendInfo) {
+              alert("sent " + sendInfo.bytesSent);
+          });
+        });
+      };
   });
-})
+});

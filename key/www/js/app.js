@@ -1,13 +1,26 @@
 angular.module('key', ['ionic'])
-.controller('keyctrl', function($scope) {
-  $scope.sendcmd = function sendcmd(cmd) {
-    console.log("cmd: " + cmd);
-    chrome.sockets.udp.create({}, function(socketInfo) {
-      var socketId = socketInfo.socketId;
-      chrome.sockets.udp.send(socketId, cmd,
-        '192.168.1.129', 2390, function(sendInfo) {
-          console.log("sent " + sendInfo.bytesSent);
-      });
-    });
-  };
+//.factory('udpfact')
+.controller('keyctrl', ['$scope', 'chrome', function($scope, chrome) {
+  //nothin
+}])
+  .run(function($ionicPlatform, $timeout) {
+    alert("runnin");
+    $ionicPlatform.ready(function() {
+      alert('window.cordova: ' + Object.keys(window.cordova).join(', '));
+      alert('window.cordova: ' + Object.keys(window.cordova.plugins).join(', '));
+      alert(JSON.stringify(window.cordova));
+      alert(JSON.stringify(window.cordova.plugins));
+
+      alert("printed windows.cordova");
+      $scope.sendcmd = function sendcmd(cmd) {
+        alert("cmd: " + cmd);
+        chrome.sockets.udp.create({}, function(socketInfo) {
+          var socketId = socketInfo.socketId;
+          chrome.sockets.udp.send(socketId, cmd,
+            '10.0.0.9', 2390, function(sendInfo) {
+              alert("sent " + sendInfo.bytesSent);
+          });
+        });
+      };
+  });
 });
