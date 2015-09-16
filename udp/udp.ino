@@ -23,6 +23,7 @@
 
 int status = WL_IDLE_STATUS;
 char ssid[] = "Cisco25707";  //  your network SSID (name)
+//char ssid[] = "Cisco60921";  //  your network SSID (name)
 char pass[] = "password";    // your network password
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
@@ -115,6 +116,7 @@ void loop() {
     Udp.write(ReplyBuffer);
     Udp.endPacket();
     Serial.print(Udp.remoteIP());
+    Serial.print(" ");
     Serial.print(Udp.remotePort());
   }
 }
