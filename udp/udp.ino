@@ -1,7 +1,9 @@
 /*
  Run this on an Arduino with a WiFi Shield.
  in a terminal run
-     nc -u [shield's ip] 2930
+nc -u [shield's ip] 2390
+  e.g.
+nc -u 192.168.1.129 2390
  send l to sim. lock and u to sim. unlock. a light will blink. 
 
  based on:
@@ -12,15 +14,14 @@
  created 30 December 2012
  by dlf (Metodo2 srl)
  blinking for testing added by Joshua
- */
-
-
+*/
 #include <SPI.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #define OPEN 8
 #define CLOSE 9
-
+#define SHORT 100
+long randnum;
 int status = WL_IDLE_STATUS;
 char ssid[] = "Cisco25707";  //  your network SSID (name)
 //char ssid[] = "Cisco60921";  //  your network SSID (name)
@@ -38,9 +39,9 @@ void
 blink(int pin)
 {
   digitalWrite(pin, HIGH);
-  delay(1000);
+  delay(SHORT);
   digitalWrite(pin, LOW);
-  delay(1000);
+  delay(SHORT);
 }
 
 void setup() {
@@ -48,6 +49,7 @@ void setup() {
   pinMode(CLOSE, OUTPUT);
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
+  randomSeed(analogRead(0)); /* seed with analog pin noise */
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
@@ -70,7 +72,6 @@ void setup() {
     Serial.println(ssid);
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
     status = WiFi.begin(ssid, pass);
-
     // wait 10 seconds for connection:
     delay(10000);
   }
@@ -83,7 +84,6 @@ void setup() {
 }
 
 void loop() {
-
   // if there's data available, read a packet
   int packetSize = Udp.parsePacket();
   if (packetSize) {
@@ -97,16 +97,18 @@ void loop() {
 
     // read the packet into packetBufffer
     int len = Udp.read(packetBuffer, 255);
-    if (len > 0) {
-      packetBuffer[len] = 0;
-    }
+    if (len > 0) packetBuffer[len] = 0;
     Serial.println("Contents:");
     Serial.println(packetBuffer);
-    if (packetBuffer[0] == 'l') /* lock */
+    char c = packetBuffer[0];
+    if (c == 'l') /* lock */
       blink(CLOSE);
-    else if (packetBuffer[0] == 'u') /* unlock */
+    else if (c == 'u') /* unlock */
       blink(OPEN);
-    else {
+    else if (c == 'r') {
+      randnum = random(999999);
+      Serial.println(randnum);
+    } else {
       Serial.print("err: did not understand command: ");
       Serial.print(packetBuffer);
       Serial.print(".\n");
@@ -120,7 +122,6 @@ void loop() {
     Serial.print(Udp.remotePort());
   }
 }
-
 
 void printWifiStatus() {
   // print the SSID of the network you're attached to:

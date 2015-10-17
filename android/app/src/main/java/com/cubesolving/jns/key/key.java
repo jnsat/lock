@@ -3,7 +3,6 @@
  */
 package com.cubesolving.jns.key;
 
-import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -52,21 +51,6 @@ public class key extends AppCompatActivity implements View.OnClickListener {
 
         return super.onOptionsItemSelected(item);
     }
-//    View view = findViewById(android.R.id.content);
-//    Button b_lock = (Button) findViewById(R.id.b_lock);
-//    b_lock.setOnClickListener( new View.OnClickListener() {
-//        @Override
-//        public void onClick(View v) {
-//            new send().execute("l");
-//        }
-//    });
-//    Button b_unlock = (Button) findViewById(R.id.b_unlock);
-//    b_unlock.setOnClickListener( new View.OnClickListener() {
-//        @Override
-//        public void onClick(View v) {
-//            new send().execute("u");
-//        }
-//    });
 
     /* see
     https://code.google.com/p/boxeeremote/wiki/AndroidUDP
@@ -83,6 +67,7 @@ public class key extends AppCompatActivity implements View.OnClickListener {
                     InetAddress ip = InetAddress.getByName("192.168.1.129");
                     DatagramPacket pack = new DatagramPacket(bytes, len, ip, port);
                     sock.send(pack); /* SEND */
+                    sock.close();
                 }
             } catch (Exception e) {
                 Log.e(TAG, "exception", e);
@@ -94,12 +79,13 @@ public class key extends AppCompatActivity implements View.OnClickListener {
         char cmd = ' ';
         switch(v.getId()) {
             case R.id.b_lock:
-                cmd = 'l';
+                cmd = 'l'; /* lock */
                 break;
             case R.id.b_unlock:
-                cmd = 'u';
+                cmd = 'u'; /* unlock */
                 break;
         }
         new send().execute(Character.toString(cmd));
     }
+    public void lock
 }
