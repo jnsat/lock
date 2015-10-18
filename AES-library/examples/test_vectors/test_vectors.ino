@@ -14,7 +14,8 @@ void loop ()
 
 void setup ()
 {
-  Serial.begin (57600) ;
+  //Serial.begin (57600) ;
+  Serial.begin (9600) ;
   Serial.print ("AES library test vectors") ;
 
   monte_carlo (128) ;
