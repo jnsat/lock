@@ -31,7 +31,8 @@ void loop ()
 
 void setup ()
 {
-  Serial.begin (57600) ;
+  //Serial.begin (57600) ;
+  Serial.begin (9600) ;
   Serial.print ("testng mode") ;
 
   prekey_test () ;
