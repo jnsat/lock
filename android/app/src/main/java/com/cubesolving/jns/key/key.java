@@ -64,7 +64,7 @@ public class key extends AppCompatActivity implements View.OnClickListener {
                     String str = strings[i];
                     byte[] bytes = str.getBytes();
                     int len = str.length();
-                    InetAddress ip = InetAddress.getByName("192.168.1.129");
+                    InetAddress ip = InetAddress.getByName("192.168.1.114");
                     DatagramPacket pack = new DatagramPacket(bytes, len, ip, port);
                     sock.send(pack); /* SEND */
                     sock.close();
@@ -87,5 +87,5 @@ public class key extends AppCompatActivity implements View.OnClickListener {
         }
         new send().execute(Character.toString(cmd));
     }
-    public void lock
+    //public void lock
 }
