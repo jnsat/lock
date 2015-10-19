@@ -10,8 +10,8 @@ ionic	old app draft
 android	current phone app
 udp	arduino program
 AES-library	...
-Makefile	not in use
-
+Makefile	not in use, for uploading arduino code without IDE
+```
 ## use
 Upload udp/udp.ino sketch to Arduino with WiFi shield.
 Run arduino/ app on phone
