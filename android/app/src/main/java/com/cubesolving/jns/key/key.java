@@ -16,7 +16,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-public class key extends AppCompatActivity implements View.OnClickListener {
+public class key extends AppCompatActivity {
     static final int port = 2390;
     private static final String TAG = "key";
     @Override
@@ -25,9 +25,27 @@ public class key extends AppCompatActivity implements View.OnClickListener {
         setContentView(R.layout.activity_key);
 
         Button b_lock = (Button) findViewById(R.id.b_lock);
-        b_lock.setOnClickListener(this);
         Button b_unlock = (Button) findViewById(R.id.b_unlock);
-        b_unlock.setOnClickListener(this);
+        Button b_auth = (Button) findViewById(R.id.b_auth);
+
+        b_lock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new send().execute("l");
+            }
+        });
+        b_unlock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new send().execute("u");
+            }
+        });
+        b_auth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new send().execute("a");
+            }
+        });
     }
 
     @Override
@@ -60,11 +78,11 @@ public class key extends AppCompatActivity implements View.OnClickListener {
             int count = strings.length;
             try {
                 DatagramSocket sock = new DatagramSocket();
+                InetAddress ip = InetAddress.getByName("192.168.1.129");
                 for (int i = 0; i < count; i++) {
                     String str = strings[i];
                     byte[] bytes = str.getBytes();
                     int len = str.length();
-                    InetAddress ip = InetAddress.getByName("192.168.1.114");
                     DatagramPacket pack = new DatagramPacket(bytes, len, ip, port);
                     sock.send(pack); /* SEND */
                     sock.close();
@@ -73,19 +91,6 @@ public class key extends AppCompatActivity implements View.OnClickListener {
                 Log.e(TAG, "exception", e);
             }
         return null; /* func is of type Void (the object) */
-        }
+         }
     }
-    public void onClick(View v) {
-        char cmd = ' ';
-        switch(v.getId()) {
-            case R.id.b_lock:
-                cmd = 'l'; /* lock */
-                break;
-            case R.id.b_unlock:
-                cmd = 'u'; /* unlock */
-                break;
-        }
-        new send().execute(Character.toString(cmd));
-    }
-    //public void lock
 }

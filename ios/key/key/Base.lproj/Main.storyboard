@@ -16,15 +16,21 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hM0-E7-FCk">
-                                <rect key="frame" x="276" y="216" width="48" height="30"/>
-                                <animations/>
-                                <state key="normal" title="Unlock"/>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z0I-Ih-mTu">
                                 <rect key="frame" x="284" y="149" width="33" height="30"/>
                                 <animations/>
                                 <state key="normal" title="Lock"/>
+                                <connections>
+                                    <action selector="lock:" destination="BYZ-38-t0r" eventType="touchUpInside" id="s97-nQ-5eI"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hM0-E7-FCk">
+                                <rect key="frame" x="276" y="216" width="48" height="30"/>
+                                <animations/>
+                                <state key="normal" title="Unlock"/>
+                                <connections>
+                                    <action selector="unlock:" destination="BYZ-38-t0r" eventType="touchUpInside" id="lr0-tF-dsL"/>
+                                </connections>
                             </button>
                         </subviews>
                         <animations/>

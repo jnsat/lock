@@ -1,0 +1,2 @@
+Icons generated using Android Asset Studio at 
+https://romannurik.github.io/AndroidAssetStudio
