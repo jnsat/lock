@@ -18,3 +18,5 @@ AES-library	...
 Makefile	not in use, for uploading arduino code without IDE
 ```
 
+# encryption
+Not finished. Planning to use the AES library and challange.
