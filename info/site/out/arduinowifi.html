@@ -1,0 +1,75 @@
+<h1>arduino wifi</h1>
+
+<p>We tried using an Xbee Zigbee.
+They are for mesh communications so they don't do Wifi.
+Then we tried to use and Xbee Wifi.
+I couldn't get it to initialize so I got an Arduino Wifi shield.</p>
+
+<h2>docs</h2>
+
+<p><a href="https://www.arduino.cc/en/Main/ArduinoWiFiShield">ArduinoWiFiShield</a> <br />
+<a href="https://www.arduino.cc/en/Hacking/WiFiShieldFirmwareUpgrading">WiFiShieldFirmwareUpgrading</a> <br />
+<a href="https://www.arduino.cc/en/Guide/ArduinoWiFiShield">ArduinoWiFiShield</a> <br />
+<a href="https://www.arduino.cc/en/Reference/WiFi">WiFi</a>  </p>
+
+<h2>firmware</h2>
+
+<p>arduino.cc advises upgrading the firmware first.
+To upgrade the firmware first download a programmer.
+* Windows: <a href="http://www.atmel.com/tools/FLIP.aspx">Atmel's flip</a>
+* Mac: install dfu-programmer using   <a href="https://www.macports.org/install.php#pkg">macports</a>. <br />
+  In Yosemite the installer stopped on the pentultimate step. Just quit it [1] (don't sue). Run:
+      sudo port selfupdate
+      sudo port install dfu-programmer
+      sudo port upgrade outdated
+* Other: install <code>dfu-programmer</code></p>
+
+<p>There are firmware installation scripts in <code>/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/firmwares/wifishield/scripts</code></p>
+
+<p>You might save a copy of the right script somewhere easy to get to. Use the one ending in '_mac' if you're on a mac.</p>
+
+<p>Connect the J3 jumper. It is a small rectangular piece of plastic which comes attached to one small metal pole on the shield. Pull it up and put it over both of the pins there.
+Then run:</p>
+
+<pre><code>chmod a+x ./ArduinoWifiShield_upgrade_mac.sh
+./ArduinoWifiShield_upgrade_mac.sh -a /Applications/Arduino.app/Contents/Java -f shield
+</code></pre>
+
+<h2>code</h2>
+
+<p>Example (based on arduino.cc's)
+```
+/* code from https://www.arduino.cc/en/Guide/ArduinoWiFiShield
+ * https://www.arduino.cc/en/Reference/WiFiLocalIP
+ * etc. public domain according to them.
+ */</p>
+
+<h1>include <SPI.h></h1>
+
+<h1>include <WiFi.h></h1>
+
+<p>char ssid[] = "ssid";
+char pass[] = "password";
+int status = WL<em>IDLE</em>STATUS; // wifi radio's status
+IPAddress ip;</p>
+
+<p>void setup() {1
+  Serial.begin(9600);
+  Serial.println("Attempting to connect to WPA network...");
+  status = WiFi.begin(ssid, pass);</p>
+
+<p>if ( status != WL_CONNECTED) {
+    Serial.println("Couldn't get a wifi connection");
+    while(true);
+  }
+  else {
+    Serial.println("Connected to network");
+    ip = WiFi.localIP();
+    Serial.println(ip);
+  }
+}</p>
+
+<p>void loop() {
+}
+```
+[1]: I tried just closing it because of https://trac.macports.org/ticket/43228</p>
