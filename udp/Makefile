@@ -45,12 +45,10 @@
 #
 # $Id$
 
-#PORT = /dev/tty.usbserial*
-PORT = /dev/cu.usbmodem621
+PORT = /dev/tty.usbserial*
 TARGET = udp
 #ARDUINO = /Applications/arduino-0005/lib/targets/arduino
-#ARDUINO =/Applications/Arduino.app/Contents/Resources/Java
-ARDUINO = /Applications/Arduino.app/Contents/Java
+ARDUINO =/Applications/Arduino.app/Contents/Resources/Java
 SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
   $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c
 CXXSRC = $(TARGET).cpp $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WRandom.cpp
