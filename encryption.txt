@@ -1,0 +1,10 @@
+The CBC, CFB, and OFB modes require an initialization vector as input, in addition to the 
+plaintext.  An IV must be generated for each execution of the encryption operation, and the same 
+IV is necessary for the corresponding execution of the decryption operation. Therefore, the IV, or 
+information that is sufficient to calculate the IV, must be available to each party to the 
+communication. 
+From [FIPS](http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf)
+Appendex C: Generation of Initialization Vectors
+
+
+

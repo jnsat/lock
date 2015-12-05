@@ -1,4 +1,6 @@
 /*
+ Arduino Wireless Lock by Joshua And Marcus
+ 
  Run this on an Arduino with a WiFi Shield.
  in a terminal run
 nc -u [shield's ip] 2390
@@ -19,27 +21,119 @@ nc -u 192.168.1.129 2390
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <Servo.h>
+#include <AES.h>
 
 enum {
-  LOCK = 100, UNLOCK = 0, MOTOR = 9
+  LOCK = 100,
+  UNLOCK = 0,
+  MOTOR = 9,
+  PAUTH = 3,
+  KEYBITS = 128,
+  MSGBLOCKS = 1
 };
 
 long randnum;
 int status = WL_IDLE_STATUS;
-char ssid[] = "Cisco25707";  //  your network SSID (name)
-char pass[] = "password";    // your network password
-unsigned int localPort = 2390;      // local port to listen on
+//char ssid[] = "Cisco25707";
+//char pass[] = "password";
+char ssid[] = "statewide";
+char pass[] = "st88wide";
+unsigned int localPort = 2390;
 
 char packetBuffer[255]; //buffer to hold incoming packet
-char  ReplyBuffer[] = "acknowledged";       // a string to send back
+char  ReplyBuffer[] = "acknowledged"; // a string to send back
 Servo servo;
 WiFiUDP Udp;
+AES aes;
+IPAddress IP(192, 168, 1, 129);
+
+byte key[] =
+{
+  0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+
+byte plain[] =
+{
+  // 0xf3, 0x44, 0x81, 0xec, 0x3c, 0xc6, 0x27, 0xba, 0xcd, 0x5d, 0xc3, 0xfb, 0x08, 0xf2, 0x73, 0xe6
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0xE0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+/* laugh at me */
+byte my_iv[] =
+{
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+};
+
+byte cipher [4 * N_BLOCK];
+byte check [4 * N_BLOCK];
+long t0, t1; /* something for aes */
+byte succ;
+byte iv [N_BLOCK]; /* for interal lib */
+void
+setkey(int bits, int blocks)
+{
+  //long t0 = micros () ;
+  t0 = micros();
+  succ = aes.set_key (key, bits) ;
+  long t1 = micros() - t0 ;
+  Serial.print ("set_key ") ; Serial.print (bits) ; Serial.print (" ->") ; Serial.print ((int) succ) ;
+  Serial.print (" took ") ; Serial.print (t1) ; Serial.println ("us") ;
+}
+
+void
+encrypt(int bits, int blocks)
+{
+  t0 = micros () ;
+  if (blocks == 1)
+    succ = aes.encrypt (plain, cipher) ;
+  else
+  {
+    for (byte i = 0 ; i < 16 ; i++)
+      iv[i] = my_iv[i];
+    succ = aes.cbc_encrypt (plain, cipher, blocks, iv) ;
+  }
+  t1 = micros () - t0 ;
+  Serial.print ("encrypt ") ; Serial.print ((int) succ) ;
+  Serial.print (" took ") ; Serial.print (t1) ; Serial.println ("us") ;
+}
+
+void
+decrypt(int bits, int blocks)
+{
+  t0 = micros () ;
+  if (blocks == 1)
+    succ = aes.decrypt (cipher, plain) ;
+  else
+  {
+    for (byte i = 0 ; i < 16 ; i++)
+      iv[i] = my_iv[i];
+    succ = aes.cbc_decrypt (cipher, check, blocks, iv) ;
+  }
+  t1 = micros () - t0 ;
+  Serial.print ("decrypt ") ; Serial.print ((int) succ) ;
+  Serial.print (" took ") ; Serial.print (t1) ; Serial.println ("us") ;
+
+  for (byte ph = 0 ; ph < (blocks == 1 ? 3 : 4) ; ph++)
+  {
+    for (byte i = 0 ; i < (ph < 3 ? blocks*N_BLOCK : N_BLOCK) ; i++)
+    {
+      byte val = ph == 0 ? plain[i] : ph == 1 ? cipher[i] : ph == 2 ? check[i] : iv[i];
+      Serial.print (val >> 4, HEX) ; Serial.print (val & 15, HEX) ; Serial.print (" ") ;
+    }
+    Serial.println () ;
+  }
+}
 
 void setup() {
+  pinMode(PAUTH, INPUT);
   servo.attach(MOTOR);
-  //Initialize serial and wait for port to open:
-  Serial.begin(9600);
   randomSeed(analogRead(0)); /* seed with analog pin noise */
+  setkey(256, 1); /* aes bits */
+ 
+  Serial.begin(9600);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
@@ -70,11 +164,17 @@ void setup() {
 
   Serial.println("\nStarting connection to server...");
   // if you get a connection, report back via serial:
+  WiFi.config(IP);
   Udp.begin(localPort);
+  Serial.println("Finished setup");
 }
 
 void loop() {
+  /* test auth setup button. could be used to send aes key accross network once. */
+  //Serial.println("PAUTH");
+  //Serial.println(digitalRead(PAUTH));
   // if there's data available, read a packet
+  
   int packetSize = Udp.parsePacket();
   if (packetSize) {
     Serial.print("Received packet of size ");
@@ -90,9 +190,14 @@ void loop() {
     if (len > 0) packetBuffer[len] = 0;
     Serial.println("Contents:");
     Serial.println(packetBuffer);
+    //decrypt(packetBuffer);
     char c = packetBuffer[0];
-    if (c == 'l') /* lock */
+    plain[0] = c; /* first char */
+    //decrypt(KEYBITS, MSGBLOCKS);
+    if (c == 'l') { /* lock */
       servo.write(LOCK);
+      Serial.println("lock");
+    }
     else if (c == 'u') { /* unlock */
       servo.write(UNLOCK);
       Serial.println("unlock");
@@ -100,6 +205,14 @@ void loop() {
     else if (c == 'r') {
       randnum = random(999999);
       Serial.println(randnum);
+    }
+    else if (c == 'a') { /* auth prep */
+      /* send iv like a challenge, no need to encrypt.
+      should be rand and uniq for real world to prevent replay */
+      Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+      //geniv(); /* should be random each time */
+      Udp.write((char *)my_iv);
+      Udp.endPacket();
     } else {
       Serial.print("err: did not understand command:->");
       Serial.print(packetBuffer);

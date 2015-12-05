@@ -19,4 +19,7 @@ Makefile	not in use, for uploading arduino code without IDE
 ```
 
 # encryption
-Not finished. Planning to use the AES library and challange.
+AES CBC in progress
+
+Thanks to Dr. Lin for the guidance and Marcus for the hardware
+
