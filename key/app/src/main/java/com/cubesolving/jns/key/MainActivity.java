@@ -20,15 +20,16 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-public class key extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
     static final int port = 2390;
     //static final int serverip = 0;
     private static final String TAG = "key";
     DatagramSocket socket;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_key);
+        setContentView(R.layout.activity_main);
 
         Button b_lock = (Button) findViewById(R.id.b_lock);
         Button b_unlock = (Button) findViewById(R.id.b_unlock);
@@ -55,29 +56,29 @@ public class key extends AppCompatActivity {
 
         try {
             socket = new DatagramSocket(port);
-        } catch (Exception e) {}
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_key, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        } catch (Exception e) {
         }
+    }
 
-        return super.onOptionsItemSelected(item);
+
+    /* https://code.google.com/p/boxeeremote/wiki/AndroidUDP */
+    InetAddress getBroadcastAddress() throws IOException {
+        WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        DhcpInfo dhcp = wifi.getDhcpInfo();
+        if (!dhcp) openOptionsMenu(); /* so they can turn on wifi */
+
+        int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
+        byte[] quads = new byte[4];
+        for (int k = 0; k < 4; k++)
+            quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+        return InetAddress.getByAddress(quads);
+    }
+
+    String getudp() throws IOException {
+        byte[] buf = new byte[1024];
+        DatagramPacket packet = new DatagramPacket(buf, buf.length);
+        return socket.receive(packet);
+
     }
 
     /* see
@@ -111,27 +112,7 @@ public class key extends AppCompatActivity {
             } catch (Exception e) {
                 Log.e(TAG, "exception", e);
             }
-        return null; /* func is of type Void (the object) */
-         }
-    }
-
-    /* https://code.google.com/p/boxeeremote/wiki/AndroidUDP */
-    InetAddress getBroadcastAddress() throws IOException {
-        WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        DhcpInfo dhcp = wifi.getDhcpInfo();
-        if (!dhcp) openOptionsMenu(); /* so they can turn on wifi */
-
-        int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
-        byte[] quads = new byte[4];
-        for (int k = 0; k < 4; k++)
-            quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
-        return InetAddress.getByAddress(quads);
-    }
-
-    String recv() throws IOException {
-        byte[] buf = new byte[1024];
-        DatagramPacket packet = new DatagramPacket(buf, buf.length);
-        return socket.receive(packet);
-
+            return null; /* func is of type Void (the object) */
+        }
     }
 }
