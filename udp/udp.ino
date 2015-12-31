@@ -1,4 +1,4 @@
-/*
+  /*
  Arduino Wireless Lock by Joshua And Marcus
  
  Run this on an Arduino with a WiFi Shield.
@@ -29,23 +29,38 @@ enum {
   MOTOR = 9,
   PAUTH = 3,
   KEYBITS = 128,
-  MSGBLOCKS = 1
+  MSGBLOCKS = 1,
+  IV_LEN = 16,
+  BYTE_MAX = 255
 };
 
 long randnum;
 int status = WL_IDLE_STATUS;
-//char ssid[] = "Cisco25707";
-//char pass[] = "password";
-char ssid[] = "statewide";
-char pass[] = "st88wide";
+char ssid[] = "Cisco25707";
+char pass[] = "password";
+//char ssid[] = "statewide";
+//char pass[] = "st88wide";
 unsigned int localPort = 2390;
 
 char packetBuffer[255]; //buffer to hold incoming packet
-char  ReplyBuffer[] = "acknowledged"; // a string to send back
+char  ReplyBuffer[] = "ack"; // a string to send back
 Servo servo;
 WiFiUDP Udp;
 AES aes;
 IPAddress IP(192, 168, 1, 129);
+//IPAddress IP(10, 0, 0, 35);
+
+void p(byte X) { /* http://stackoverflow.com/questions/19127945/how-to-serial-print-full-hexadecimal-bytes */
+   if (X < 10) {Serial.print("0");}
+   Serial.print(X, HEX);
+   Serial.print(" ");
+}
+
+
+void print_iv(unsigned char *iv) {
+  for (int i = 0; i < IV_LEN; i++)
+    p(iv[i]);
+}
 
 byte key[] =
 {
@@ -66,6 +81,12 @@ byte my_iv[] =
 {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
 };
+
+void
+gen_iv(byte iv[], int len) {
+  for (int i = 0; i < IV_LEN; i++)
+    iv[i] = random(IV_LEN); /* rand byte 0x00 to 0xff */
+}
 
 byte cipher [4 * N_BLOCK];
 byte check [4 * N_BLOCK];
@@ -164,7 +185,7 @@ void setup() {
 
   Serial.println("\nStarting connection to server...");
   // if you get a connection, report back via serial:
-  WiFi.config(IP);
+  //WiFi.config(IP);
   Udp.begin(localPort);
   Serial.println("Finished setup");
 }
@@ -173,8 +194,8 @@ void loop() {
   /* test auth setup button. could be used to send aes key accross network once. */
   //Serial.println("PAUTH");
   //Serial.println(digitalRead(PAUTH));
-  // if there's data available, read a packet
   
+  // if there's data available, read a packet
   int packetSize = Udp.parsePacket();
   if (packetSize) {
     Serial.print("Received packet of size ");
@@ -188,8 +209,9 @@ void loop() {
     // read the packet into packetBufffer
     int len = Udp.read(packetBuffer, 255);
     if (len > 0) packetBuffer[len] = 0;
-    Serial.println("Contents:");
-    Serial.println(packetBuffer);
+    Serial.print("Contents: [");
+    Serial.print(packetBuffer);
+    Serial.println("]");
     //decrypt(packetBuffer);
     char c = packetBuffer[0];
     plain[0] = c; /* first char */
@@ -207,11 +229,23 @@ void loop() {
       Serial.println(randnum);
     }
     else if (c == 'a') { /* auth prep */
+      Serial.print("my_iv: [");
+      print_iv(my_iv);
+      Serial.print("]\n");
+      
+      gen_iv(my_iv, IV_LEN); /* rand */
+      
+      Serial.print("my_iv: [");
+      print_iv(my_iv);
+      Serial.print("]\n");
+      
       /* send iv like a challenge, no need to encrypt.
       should be rand and uniq for real world to prevent replay */
       Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-      //geniv(); /* should be random each time */
-      Udp.write((char *)my_iv);
+      //Udp.write((char *)my_iv);
+      /* send iv one byte at a time */
+      for (int i = 0; i < IV_LEN; i++)
+        Udp.print(my_iv[i]);
       Udp.endPacket();
     } else {
       Serial.print("err: did not understand command:->");
