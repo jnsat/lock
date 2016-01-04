@@ -21,6 +21,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class key extends AppCompatActivity {
+    int iv[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
+    int key[] =
+            {
+                    0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            } ;
     static final int port = 2390;
     //static final int serverip = 0;
     private static final String TAG = "key";
@@ -119,7 +125,7 @@ public class key extends AppCompatActivity {
     InetAddress getBroadcastAddress() throws IOException {
         WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         DhcpInfo dhcp = wifi.getDhcpInfo();
-        if (!dhcp) openOptionsMenu(); /* so they can turn on wifi */
+        //if (!dhcp != Null) openOptionsMenu(); /* so they can turn on wifi */
 
         int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
         byte[] quads = new byte[4];
@@ -128,10 +134,10 @@ public class key extends AppCompatActivity {
         return InetAddress.getByAddress(quads);
     }
 
-    String recv() throws IOException {
+    DatagramPacket recv() throws IOException {
         byte[] buf = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
-        return socket.receive(packet);
-
+        socket.receive(packet);
+        return packet;
     }
 }

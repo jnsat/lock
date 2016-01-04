@@ -12,16 +12,16 @@ nc -u 192.168.1.129 2390
  WiFi UDP Send and Receive String
  This sketch wait an UDP packet on localPort using a WiFi shield.
  When a packet is received an Acknowledge packet is sent to the client on port remotePort
-
+ 
  created 30 December 2012
  by dlf (Metodo2 srl)
- blinking for testing added by Joshua
 */
 #include <SPI.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <Servo.h>
 #include <AES.h>
+
 
 enum {
   LOCK = 100,
@@ -51,11 +51,23 @@ IPAddress IP(192, 168, 1, 129);
 //IPAddress IP(10, 0, 0, 35);
 
 void p(byte X) { /* http://stackoverflow.com/questions/19127945/how-to-serial-print-full-hexadecimal-bytes */
-   if (X < 10) {Serial.print("0");}
+   if (X < 16) {Serial.print("0");}
    Serial.print(X, HEX);
    Serial.print(" ");
 }
 
+void p_udp(byte X) { /* http://stackoverflow.com/questions/19127945/how-to-serial-print-full-hexadecimal-bytes */
+   if (X < 16) {Udp.print("0");}
+   Udp.print(X, HEX);
+   //Udp.print(" ");
+}
+
+void
+print_iv_udp(unsigned char *iv)
+{
+  for (int i = 0; i < IV_LEN; i++)
+    p_udp(iv[i]);
+}
 
 void print_iv(unsigned char *iv) {
   for (int i = 0; i < IV_LEN; i++)
@@ -187,6 +199,9 @@ void setup() {
   // if you get a connection, report back via serial:
   //WiFi.config(IP);
   Udp.begin(localPort);
+
+  encrypt(128, 4);
+  decrypt(128, 4);
   Serial.println("Finished setup");
 }
 
@@ -224,16 +239,12 @@ void loop() {
       servo.write(UNLOCK);
       Serial.println("unlock");
     }
-    else if (c == 'r') {
-      randnum = random(999999);
-      Serial.println(randnum);
-    }
     else if (c == 'a') { /* auth prep */
       Serial.print("my_iv: [");
       print_iv(my_iv);
       Serial.print("]\n");
       
-      gen_iv(my_iv, IV_LEN); /* rand */
+      //gen_iv(my_iv, IV_LEN); /* randomize iv */
       
       Serial.print("my_iv: [");
       print_iv(my_iv);
@@ -242,10 +253,10 @@ void loop() {
       /* send iv like a challenge, no need to encrypt.
       should be rand and uniq for real world to prevent replay */
       Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-      //Udp.write((char *)my_iv);
       /* send iv one byte at a time */
-      for (int i = 0; i < IV_LEN; i++)
-        Udp.print(my_iv[i]);
+      //char *str_iv[IV_LEN] = 
+      print_iv_udp  (my_iv);
+      Udp.print("\n");
       Udp.endPacket();
     } else {
       Serial.print("err: did not understand command:->");
