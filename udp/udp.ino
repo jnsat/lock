@@ -15,6 +15,9 @@ nc -u 192.168.1.129 2390
  
  created 30 December 2012
  by dlf (Metodo2 srl)
+
+ thank Robert Bares http://forum.arduino.cc/index.php?topic=38107.0
+ for hex printing code
 */
 #include <SPI.h>
 #include <WiFi.h>
@@ -39,11 +42,13 @@ enum {
   
   BYTE_MAX = 255,
 
-  LOCALPORT = 2390
+  LOCALPORT = 2390,
+
+  CHARS_PER_BYTE = 2
 };
 
 char packetBuffer[IV_LEN + KEYBITS]; //buffer to hold incoming packet
-char  ReplyBuffer[] = "a"; // a string to send back
+char  ReplyBuffer[] = "ack\n"; // a string to send back
 Servo servo;
 WiFiUDP Udp;
 AES aes;
@@ -91,6 +96,18 @@ print_iv_udp(unsigned char *iv)
 void print_iv(unsigned char *iv) {
   for (int i = 0; i < IV_LEN; i++)
     p(iv[i]);
+}
+
+void
+hex2char(byte *bytes, char *out, int len, int spaces)
+{
+    int char_per_byte = CHARS_PER_BYTE + spaces; /* high bit, low bit, optional space 0x[AB ] */
+    for (int i = 0; i < len; i++) { /* convert hex to char keeping zeros */
+      /* Robert Bares http://forum.arduino.cc/index.php?topic=38107.0 */
+      int first = (bytes[i] >> 4) & 0x0f;
+      int second = bytes[i] & 0x0f;
+      sprintf(&out[i * char_per_byte], spaces ? "%01X%01X " : "%01X%01X", first, second);
+    }
 }
 
 void
@@ -165,6 +182,25 @@ decrypt(int bits, int blocks)
     }
     Serial.println () ;
   }
+}
+
+void
+auth(char c)
+{
+      debug_iv();
+      gen_iv(my_iv, IV_LEN); /* randomize iv */
+      debug_iv();
+      
+      /* send iv like a challenge, no need to encrypt.
+      should be rand and uniq for real world to prevent replay */
+      Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+      /* write iv all at once, doing each byte one at a time cuts it off after 13 out of 16 */
+      int spaces = c == 'A'; /* captial commands mean format pretty (w spaces) */
+      int char_per_byte = CHARS_PER_BYTE + spaces;
+      char buf[IV_LEN * char_per_byte];
+      hex2char(my_iv, buf, IV_LEN, spaces);
+      Udp.write(buf);
+      Udp.endPacket();
 }
 
 void setup() {
@@ -253,32 +289,10 @@ void loop() {
       servo.write(UNLOCK);
       Serial.println("unlock");
     }
-    else if (c == 'a') { /* auth prep */
-      debug_iv();
-      gen_iv(my_iv, IV_LEN); /* randomize iv */
-      debug_iv();
-      
-      /* send iv like a challenge, no need to encrypt.
-      should be rand and uniq for real world to prevent replay */
-      Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-      /* send iv one byte at a time */
-      int char_per_byte = 3;
-      char buf[IV_LEN * char_per_byte];
-      for (int i = 0; i < IV_LEN; i++) { /* convert hex to char keeping zeros */
-        /* Robert Bares http://forum.arduino.cc/index.php?topic=38107.0 */
-        int first = (my_iv[i] >> 4) & 0x0f;
-        int second = my_iv[i] & 0x0f;
-        sprintf(&buf[i * char_per_byte], "%01X%01X ", first, second);
-        //sprintf(&buf[i + 1], "%02X", first);
-      }
-      Udp.write(buf);
-      //sprintf(buf, "%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X",)
-      //print_iv_udp(iv);
-      Udp.endPacket();
+    else if (c == 'a' || c == 'A') {
+      auth(c);
     } else {
-      Serial.print(F("err: did not understand command:["));
-      Serial.print(packetBuffer);
-      Serial.print(F("]\n"));
+     Serial.printf(F("err: did not understand command:[%s]\n"), packetBuffer);
     }
     // send a reply, to the IP address and port that sent us the packet we received
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
