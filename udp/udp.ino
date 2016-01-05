@@ -22,33 +22,52 @@ nc -u 192.168.1.129 2390
 #include <Servo.h>
 #include <AES.h>
 
-
 enum {
+  /* degress for servo on door lock */
   LOCK = 100,
   UNLOCK = 0,
+
+  /* servo port */
   MOTOR = 9,
+  /* auth button pin */
   PAUTH = 3,
+
+  /* aes */
   KEYBITS = 128,
   MSGBLOCKS = 1,
   IV_LEN = 16,
-  BYTE_MAX = 255
+  
+  BYTE_MAX = 255,
+
+  LOCALPORT = 2390
 };
 
-long randnum;
-int status = WL_IDLE_STATUS;
-char ssid[] = "Cisco25707";
-char pass[] = "password";
-//char ssid[] = "statewide";
-//char pass[] = "st88wide";
-unsigned int localPort = 2390;
-
-char packetBuffer[255]; //buffer to hold incoming packet
-char  ReplyBuffer[] = "ack"; // a string to send back
+char packetBuffer[IV_LEN + KEYBITS]; //buffer to hold incoming packet
+char  ReplyBuffer[] = "a"; // a string to send back
 Servo servo;
 WiFiUDP Udp;
 AES aes;
-IPAddress IP(192, 168, 1, 129);
-//IPAddress IP(10, 0, 0, 35);
+
+
+byte key[] =
+{
+  0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+
+byte plain[] =
+{
+  // 0xf3, 0x44, 0x81, 0xec, 0x3c, 0xc6, 0x27, 0xba, 0xcd, 0x5d, 0xc3, 0xfb, 0x08, 0xf2, 0x73, 0xe6
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0xE0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+/* laugh at me */
+byte my_iv[] =
+{
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+};
 
 void p(byte X) { /* http://stackoverflow.com/questions/19127945/how-to-serial-print-full-hexadecimal-bytes */
    if (X < 16) {Serial.print("0");}
@@ -74,30 +93,18 @@ void print_iv(unsigned char *iv) {
     p(iv[i]);
 }
 
-byte key[] =
+void
+debug_iv()
 {
-  0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-
-byte plain[] =
-{
-  // 0xf3, 0x44, 0x81, 0xec, 0x3c, 0xc6, 0x27, 0xba, 0xcd, 0x5d, 0xc3, 0xfb, 0x08, 0xf2, 0x73, 0xe6
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0xE0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-/* laugh at me */
-byte my_iv[] =
-{
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
-};
+      Serial.print("my_iv: [");
+      print_iv(my_iv);
+      Serial.print("]\n");
+}
 
 void
 gen_iv(byte iv[], int len) {
   for (int i = 0; i < IV_LEN; i++)
-    iv[i] = random(IV_LEN); /* rand byte 0x00 to 0xff */
+    iv[i] = random(BYTE_MAX); /* rand byte 0x00 to 0xff */
 }
 
 byte cipher [4 * N_BLOCK];
@@ -161,6 +168,12 @@ decrypt(int bits, int blocks)
 }
 
 void setup() {
+  int status = WL_IDLE_STATUS;
+  /*char ssid[] = "Cisco25707";
+  char pass[] = "password";*/
+  char ssid[] = "statewide";
+  char pass[] = "st88wide";
+  
   pinMode(PAUTH, INPUT);
   servo.attach(MOTOR);
   randomSeed(analogRead(0)); /* seed with analog pin noise */
@@ -173,36 +186,36 @@ void setup() {
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println(F("WiFi shield not present"));
     // don't continue:
     while (true);
   }
 
   String fv = WiFi.firmwareVersion();
   if (fv != "1.1.0") {
-    Serial.println("Please upgrade the firmware");
+    Serial.println(F("Please upgrade the firmware"));
   }
 
   // attempt to connect to Wifi network:
   while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to SSID: ");
+    Serial.print(F("Attempting to connect to SSID: "));
     Serial.println(ssid);
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
     status = WiFi.begin(ssid, pass);
     // wait 10 seconds for connection:
     delay(10000);
   }
-  Serial.println("Connected to wifi");
+  Serial.println(F("Connected to wifi"));
   printWifiStatus();
 
-  Serial.println("\nStarting connection to server...");
+  Serial.println(F("\nStarting connection to server..."));
   // if you get a connection, report back via serial:
-  //WiFi.config(IP);
-  Udp.begin(localPort);
+  //WiFi.config(IP); // not possible to set static ip for udp...
+  Udp.begin(LOCALPORT);
 
   encrypt(128, 4);
   decrypt(128, 4);
-  Serial.println("Finished setup");
+  Serial.println(F("Setup done"));
 }
 
 void loop() {
@@ -213,21 +226,22 @@ void loop() {
   // if there's data available, read a packet
   int packetSize = Udp.parsePacket();
   if (packetSize) {
-    Serial.print("Received packet of size ");
+    Serial.print(F("Received packet of size "));
     Serial.println(packetSize);
-    Serial.print("From ");
+    Serial.print(F("From "));
     IPAddress remoteIp = Udp.remoteIP();
     Serial.print(remoteIp);
-    Serial.print(", port ");
+    Serial.print(F(", port "));
     Serial.println(Udp.remotePort());
 
     // read the packet into packetBufffer
     int len = Udp.read(packetBuffer, 255);
     if (len > 0) packetBuffer[len] = 0;
-    Serial.print("Contents: [");
+    Serial.print(F("Contents: ["));
     Serial.print(packetBuffer);
-    Serial.println("]");
+    Serial.println(F("]"));
     //decrypt(packetBuffer);
+    decrypt(KEYBITS, 5); /* what's bits? */
     char c = packetBuffer[0];
     plain[0] = c; /* first char */
     //decrypt(KEYBITS, MSGBLOCKS);
@@ -240,52 +254,55 @@ void loop() {
       Serial.println("unlock");
     }
     else if (c == 'a') { /* auth prep */
-      Serial.print("my_iv: [");
-      print_iv(my_iv);
-      Serial.print("]\n");
-      
-      //gen_iv(my_iv, IV_LEN); /* randomize iv */
-      
-      Serial.print("my_iv: [");
-      print_iv(my_iv);
-      Serial.print("]\n");
+      debug_iv();
+      gen_iv(my_iv, IV_LEN); /* randomize iv */
+      debug_iv();
       
       /* send iv like a challenge, no need to encrypt.
       should be rand and uniq for real world to prevent replay */
       Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
       /* send iv one byte at a time */
-      //char *str_iv[IV_LEN] = 
-      print_iv_udp  (my_iv);
-      Udp.print("\n");
+      int char_per_byte = 3;
+      char buf[IV_LEN * char_per_byte];
+      for (int i = 0; i < IV_LEN; i++) { /* convert hex to char keeping zeros */
+        /* Robert Bares http://forum.arduino.cc/index.php?topic=38107.0 */
+        int first = (my_iv[i] >> 4) & 0x0f;
+        int second = my_iv[i] & 0x0f;
+        sprintf(&buf[i * char_per_byte], "%01X%01X ", first, second);
+        //sprintf(&buf[i + 1], "%02X", first);
+      }
+      Udp.write(buf);
+      //sprintf(buf, "%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X%0X",)
+      //print_iv_udp(iv);
       Udp.endPacket();
     } else {
-      Serial.print("err: did not understand command:->");
+      Serial.print(F("err: did not understand command:["));
       Serial.print(packetBuffer);
-      Serial.print("<-\n");
+      Serial.print(F("]\n"));
     }
     // send a reply, to the IP address and port that sent us the packet we received
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Udp.write(ReplyBuffer);
     Udp.endPacket();
     Serial.print(Udp.remoteIP());
-    Serial.print(" ");
+    Serial.print(F(" "));
     Serial.print(Udp.remotePort());
   }
 }
 
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
+  Serial.print(F("SSID: "));
   Serial.println(WiFi.SSID());
 
   // print your WiFi shield's IP address:
   IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
+  Serial.print(F("IP Address: "));
   Serial.println(ip);
 
   // print the received signal strength:
   long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
+  Serial.print(F("signal strength (RSSI):"));
   Serial.print(rssi);
-  Serial.println(" dBm");
+  Serial.println(F(" dBm"));
 }
