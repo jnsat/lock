@@ -24,7 +24,7 @@ AES CBC in progress
 [X] Send random IV
 
 # screenshot
-[[lock.png]]
+![android key app screenshot](key.png)
 
 Thanks to Dr. Lin for the guidance and Marcus for the hardware
 
