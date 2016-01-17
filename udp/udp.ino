@@ -18,6 +18,10 @@ nc -u 192.168.1.129 2390
 
  thank Robert Bares http://forum.arduino.cc/index.php?topic=38107.0
  for hex printing code
+
+Sketch uses 17,890 bytes (55%) of program storage space. Maximum is 32,256 bytes.
+Global variables use 1,180 bytes (57%) of dynamic memory, leaving 868 bytes for local variables. Maximum is 2,048 bytes.
+
 */
 #include <SPI.h>
 #include <WiFi.h>
@@ -25,13 +29,28 @@ nc -u 192.168.1.129 2390
 #include <Servo.h>
 #include <AES.h>
 
+//PORTC ^= 0x01;
+//#define servo B1
+
+//void
+//pwm(int port, int width)
+///* http://blog.zipwhip.com/2012/03/28/manual-control-of-a-servo-on-the-arduino-for-the-zipwhip-textspresso-machine */
+//{
+//  /* milisecs */
+//  int period = 20 * 1000;
+//  int steplen = 0.01 * 1000;
+//}
+
 enum {
   /* degress for servo on door lock */
   LOCK = 100,
   UNLOCK = 0,
+  //lockpulse = 0.5 * 100,
+  //unlockpulse = 2.2 * 1200,
 
   /* servo port */
   MOTOR = 9,
+  
   /* auth button pin */
   PAUTH = 3,
 
@@ -44,7 +63,9 @@ enum {
 
   LOCALPORT = 2390,
 
-  CHARS_PER_BYTE = 2
+  CHARS_PER_BYTE = 2,
+
+  
 };
 
 char packetBuffer[IV_LEN + KEYBITS]; //buffer to hold incoming packet
@@ -56,8 +77,17 @@ AES aes;
 
 byte key[] =
 {
-  0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+//0xa7, 0x74, 0xde, 0x71, 
+//0xad, 0x17, 0x1d, 0xbd, 
+//0xed, 0x3d, 0x4c, 0xc9, 
+//0x55, 0xea, 0xb6, 0xb9, 
+//
+//0x1c, 0x0b, 0xed, 0x76, 
+//0x63, 0x2d, 0x69, 0x42, 
+//0xe7, 0xd5, 0x00, 0xd5, 
+//0x58, 0x19, 0xbe, 0xb4, 
 };
 
 byte plain[] =
@@ -73,7 +103,7 @@ byte my_iv[] =
 {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
 };
-
+ 
 void p(byte X) { /* http://stackoverflow.com/questions/19127945/how-to-serial-print-full-hexadecimal-bytes */
    if (X < 16) {Serial.print("0");}
    Serial.print(X, HEX);
@@ -205,15 +235,15 @@ auth(char c)
 
 void setup() {
   int status = WL_IDLE_STATUS;
-  /*char ssid[] = "Cisco25707";
-  char pass[] = "password";*/
-  char ssid[] = "statewide";
-  char pass[] = "st88wide";
+  char ssid[] = "Cisco25707";
+  char pass[] = "password";
+  //char ssid[] = "statewide";
+  //char pass[] = "st88wide";
   
-  pinMode(PAUTH, INPUT);
+  //pinMode(PAUTH, INPUT);
   servo.attach(MOTOR);
   randomSeed(analogRead(0)); /* seed with analog pin noise */
-  setkey(256, 1); /* aes bits */
+  setkey(KEYBITS, 1); /* aes bits */
  
   Serial.begin(9600);
   while (!Serial) {
