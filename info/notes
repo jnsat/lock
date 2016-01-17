@@ -3,3 +3,5 @@ After trying to pad sprintf for a while i discover
 http://forum.arduino.cc/index.php?topic=179159.0
 "The variable width or precision field (an asterisk * symbol) is not realized and will to abort the output."
 Great
+
+
