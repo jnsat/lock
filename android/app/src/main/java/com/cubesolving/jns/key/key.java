@@ -1,42 +1,58 @@
 /* key: unlock door over udp
- Joshua
+ Joshua Satterfield and Marcus
+ code based on https://code.google.com/p/boxeeremote/wiki/AndroidUDP
  */
 package com.cubesolving.jns.key;
 
 import android.content.Context;
 import android.net.DhcpInfo;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import static javax.crypto.Cipher.DECRYPT_MODE;
+
 public class key extends AppCompatActivity {
-    byte iv[] = { 0x00, 0x00, 0x00, 0x00, 0x00,
-                  0x00, 0x00, 0x00, 0x00, 0x00,
-                  0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
-    /* Should be same as Ar ino and random. Java uses unsigned bytes so I can't store high literals like 0xa7.
-       Now it works if you cast to byte, if interpreted in java it could end up negative -- but we don't care
-       all the bits are there weather you interpret the leftmost bit as a sign bit or as a number
+    /* IV -- Initialization Vector. Should be random and unique. Used as the
+    starting state of the AES algorithm. Not Secret. Should receive it from
+    the Arduino app.
+     */
+    byte iv[] = {0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+    /* AES key. Secret. Should be same as key in Arduino program and it
+    should be random. Java uses unsigned bytes so I can't store high literals
+    like 0xa7. Now it works if you cast to byte, if interpreted in java it
+    could end up negative -- but we don't care, all the bits are there whether
+     you interpret the leftmost bit as a sign bit or as a number
      */
     byte key[] = {
-            //0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            //0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             (byte) 0xa7, (byte) 0x74, (byte) 0xde, (byte) 0x71,
             (byte) 0xad, (byte) 0x17, (byte) 0x1d, (byte) 0xbd,
             (byte) 0xed, (byte) 0x3d, (byte) 0x4c, (byte) 0xc9,
@@ -46,19 +62,32 @@ public class key extends AppCompatActivity {
             (byte) 0x63, (byte) 0x2d, (byte) 0x69, (byte) 0x42,
             (byte) 0xe7, (byte) 0xd5, (byte) 0x00, (byte) 0xd5,
             (byte) 0x58, (byte) 0x19, (byte) 0xbe, (byte) 0xb4,
-    } ;
+//            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+//            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    };
+
+    /* TODO: use as receiving array */
     byte plain[] = {
-    // 0xf3, 0x44, 0x81, 0xec, 0x3c, 0xc6, 0x27, 0xba, 0xcd, 0x5d, 0xc3, 0xfb, 0x08, 0xf2, 0x73, 0xe6
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            // 0xf3, 0x44, 0x81, 0xec, 0x3c, 0xc6, 0x27, 0xba, 0xcd, 0x5d, 0xc3, 0xfb, 0x08, 0xf2, 0x73, 0xe6
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     };
     byte cipher[];
     static final int port = 2390;
-    //static final int serverip = 0;
+
+    /* name of program, used for logging (Log.d(), etc) */
     private static final String TAG = "key";
+
+    /* global socket, used by whole program for sending and receiving. */
     DatagramSocket socket;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,13 +100,13 @@ public class key extends AppCompatActivity {
         b_lock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new send().execute("l");
+                aessend("l");
             }
         });
         b_unlock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new send().execute("u");
+                aessend("u");
             }
         });
         b_auth.setOnClickListener(new View.OnClickListener() {
@@ -87,9 +116,15 @@ public class key extends AppCompatActivity {
             }
         });
 
+        /* create socket now so both send and receive methods can use it later */
         try {
             socket = new DatagramSocket(port);
-        } catch (Exception e) {}
+            socket.setBroadcast(true);
+        } catch (Exception e) {
+        }
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -114,52 +149,100 @@ public class key extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /* see
-    https://code.google.com/p/boxeeremote/wiki/AndroidUDP
-    http://developer.android.com/reference/android/os/AsyncTask.html */
-    private class send extends AsyncTask<String, Void, Void> {
-        protected Void doInBackground(String... strings) {
-            int count = strings.length;
-            try {
-                //DatagramSocket sock = new DatagramSocket();
-                //InetAddress ip = InetAddress.getByName("192.168.1.129");
-                //InetAddress ip = InetAddress.getByName("192.168.1.114");
-                InetAddress ip = getBroadcastAddress();
-                for (int i = 0; i < count; i++) {
-                    String data = strings[i];
-                    //DatagramSocket socket = new DatagramSocket(port);
-                    socket.setBroadcast(true);
-                    DatagramPacket packet = new DatagramPacket(data.getBytes(), data.length(),
-                            getBroadcastAddress(), port);
-                    socket.send(packet);
-
-//                    Log.d(TAG, "jns-key send");
-//                    String str = strings[i];
-//                    byte[] bytes = str.getBytes();
-//                    int len = str.length();
-//                    DatagramPacket pack  = new DatagramPacket(bytes, len, ip, port);
-//                    sock.send(pack); /* SEND */
-//                    sock.close();
-
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "exception", e);
-            }
-        return null; /* func is of type Void (the object) */
-         }
-    }
-
-    /* https://code.google.com/p/boxeeremote/wiki/AndroidUDP */
+    /* https://code.google.com/p/boxeeremote/wiki/AndroidUDP
+   used in send() */
     InetAddress getBroadcastAddress() throws IOException {
         WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         DhcpInfo dhcp = wifi.getDhcpInfo();
-        //if (!dhcp != Null) openOptionsMenu(); /* so they can turn on wifi */
+        if (dhcp != null) openOptionsMenu(); /* so they can turn on wifi */
 
         int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
         byte[] quads = new byte[4];
         for (int k = 0; k < 4; k++)
             quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
         return InetAddress.getByAddress(quads);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "key Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.cubesolving.jns.key/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "key Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.cubesolving.jns.key/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
+    }
+
+    /* http://developer.android.com/reference/android/os/AsyncTask.html */
+    private class send extends AsyncTask<String, Void, Void> {
+        protected Void doInBackground(String... strings) {
+            int count = strings.length;
+            try {
+                //InetAddress ip = getBroadcastAddress();
+                for (int i = 0; i < count; i++) {
+                    String data = strings[i];
+                    socket.setBroadcast(true);
+                    DatagramPacket packet =
+                            new DatagramPacket(data.getBytes(), data.length(),
+                                    getBroadcastAddress(), port);
+                    socket.send(packet);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "exception", e);
+            }
+            return null; /* func is of type Void (the object).  */
+        }
+    }
+
+    /* http://developer.android.com/reference/android/os/AsyncTask.html */
+    private class sendbytes extends AsyncTask<byte[], Void, Void> {
+        protected Void doInBackground(byte[]... bytes) {
+            int count = bytes.length;
+            try {
+                //InetAddress ip = getBroadcastAddress();
+                for (int i = 0; i < count; i++) {
+                    byte[] data = bytes[i];
+                    socket.setBroadcast(true);
+                    DatagramPacket packet =
+                            new DatagramPacket(data, data.length,
+                                    getBroadcastAddress(), port);
+                    socket.send(packet);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "exception", e);
+            }
+            return null; /* func is of type Void (the object).  */
+        }
     }
 
     DatagramPacket receive() throws IOException {
@@ -169,18 +252,40 @@ public class key extends AppCompatActivity {
         return packet;
     }
 
-    void aessend(byte[] iv, String cmd) {
+    void aessend(String cmd) {
+        new send().execute("a"); /* auth */
+        /* get iv */
+        try {
+            //DatagramPacket pack = receive();
+            byte[] buf = new byte[1024];
+            DatagramPacket packet = new DatagramPacket(buf, buf.length);
+            socket.receive(packet);
+
+            Log.d(TAG, String.valueOf(packet));
+        } catch (Exception e) {
+            Log.e(TAG, "didn't get response from socket");
+        }
 
         try {
+            SecretKeySpec k = new SecretKeySpec(key, "AES");
+
             Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
             IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
-
-            //c.init(Cipher.DECRYPT_MODE, k, new IvParameterSpec(iv));
-            SecretKeySpec k = new SecretKeySpec(key, "AES");
-            //Aplain = c.doFinal(cipher)
-        } catch (NoSuchAlgorithmException e) {
+            c.init(DECRYPT_MODE, k, new IvParameterSpec(iv));
+            /* hopefully 128 bits. encrypt cmd */
+            byte[] ciphertext = c.doFinal(cmd.getBytes());
+            new sendbytes().execute(ciphertext); /* TODO: encrypt */
+        } catch (NoSuchAlgorithmException e1) {
+            e1.printStackTrace();
+        } catch (NoSuchPaddingException e2) {
+            e2.printStackTrace();
+        } catch (InvalidAlgorithmParameterException e) {
             e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
         }
     }
