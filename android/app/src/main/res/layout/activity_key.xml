@@ -11,9 +11,19 @@
         android:layout_height="wrap_content"
         android:text="lock"
         android:id="@+id/b_lock"
-        android:layout_marginTop="52dp"
-        android:layout_centerHorizontal="true"
-        android:onClick="bsend" />
+        android:onClick="bsend"
+        android:textSize="64dp"
+        android:textAllCaps="false"
+        android:background="#55db62"
+        android:textColor="#ffffff"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:layout_centerVertical="true"
+        android:layout_alignRight="@+id/b_unlock"
+        android:layout_alignEnd="@+id/b_unlock"
+        android:layout_alignLeft="@+id/b_unlock"
+        android:layout_alignStart="@+id/b_unlock"
+        android:contextClickable="false" />
 
 
     <Button
@@ -21,17 +31,27 @@
         android:layout_height="wrap_content"
         android:text="unlock"
         android:id="@+id/b_unlock"
+        android:onClick="bsend"
+        android:textSize="64dp"
+        android:textAllCaps="false"
+        android:textColor="#ffffff"
+        android:background="#EC565A"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:singleLine="true"
         android:layout_below="@+id/b_lock"
-        android:layout_alignLeft="@+id/b_lock"
-        android:layout_alignStart="@+id/b_lock"
-        android:onClick="bsend" />
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Auth"
+        android:text="auth"
         android:id="@+id/b_auth"
-        android:layout_below="@+id/b_unlock"
+        android:textSize="48dp"
+        android:textAllCaps="false"
+        android:textColor="#222222"
+        android:background="#00ffffff"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

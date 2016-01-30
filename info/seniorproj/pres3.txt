@@ -1,0 +1,32 @@
+lock
+
+Joshua Satterfield and Marcus Alexander
+
+intro
+unlock your door wirelessly from your smartphone
+
+android phone + arduino controller
+sits on top of deadbolt
+aes cbc
+
+turn motor using arduino
+turn deadbolt using motor
+control arduino using phone
+┴RV═ZT█RŇ T▄KÍRF┌RËG╔P?
+
+2015
+around feb
+try zigbee (doesn't use wiif)
+try xbee (won't init)
+
+nov
+try arduino wifi shield ☆
+set up protocol
+android networking
+
+jan
+encrypt
+panic
+
+feb
+present
