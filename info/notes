@@ -4,4 +4,17 @@ http://forum.arduino.cc/index.php?topic=179159.0
 "The variable width or precision field (an asterisk * symbol) is not realized and will to abort the output."
 Great
 
+how to diff word docs
+http://blog.martinfenner.org/2014/08/25/using-microsoft-word-with-git/
 
+# .gitattributes file in root folder of your git project
+*.docx diff=pandoc
+
+# .gitconfig file in your home folder
+[diff "pandoc"]
+  textconv=pandoc --to=markdown
+  prompt = false
+[alias]
+  wdiff = diff --word-diff=color --unified=1
+
+You can then use git wdiff important_file.docx to see the changes (with deletions in red and insertions in green), or git log -p --word-diff=color important_file.docx to see all changes over time.
