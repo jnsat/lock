@@ -13,9 +13,11 @@ Upload udp/udp.ino sketch to Arduino with WiFi shield.
 Run arduino/ app on phone
 
 ## structure
+```
 android/	android key app
 udp/	arduino lock code
 info/	presentations etc.
+```
 
 # encryption
 AES CBC in progress 
