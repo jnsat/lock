@@ -276,7 +276,7 @@ void loop() {
     Serial.print(F("Received packet of size "));
     Serial.println(packetSize);
     Serial.print(F("From "));
-    IPAddress remoteIp = Udp.remoteIP();
+    IPAddress remoteIp = Udp.remo();
     Serial.print(remoteIp);
     Serial.print(F(", port "));
     Serial.println(Udp.remotePort());
