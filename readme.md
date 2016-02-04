@@ -1,7 +1,7 @@
 lock
 ====
 
-![lock logo](logo.png)
+![lock logo](img/logo.png)
 
 Unlock a door wirelessly using your phone.
 Uses an Android app to send commands over UDP to and Arduino.
@@ -25,7 +25,7 @@ AES CBC in progress
 [X] Send random IV
 
 # screenshot
-![android key app screenshot](screenshot.png)
+![android key app screenshot](img/screenshot.png)
 
 Thanks to Dr. Lin for the guidance and Marcus for the hardware
 
