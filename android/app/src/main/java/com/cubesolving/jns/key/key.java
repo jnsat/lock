@@ -97,6 +97,7 @@ public class key extends AppCompatActivity {
         Button b_unlock = (Button) findViewById(R.id.b_unlock);
         Button b_auth = (Button) findViewById(R.id.b_auth);
 
+        /* aessend for encryption, send for unencrypted */
         b_lock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,7 +113,8 @@ public class key extends AppCompatActivity {
         b_auth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new send().execute("a");
+                //new send().execute("a");
+                aessend("a");
             }
         });
 
@@ -253,40 +255,42 @@ public class key extends AppCompatActivity {
     }
 
     void aessend(String cmd) {
-        new send().execute("a"); /* auth */
+        new send().execute(cmd); /* auth */
+//        new send().execute("a"); /* auth */
         /* get iv */
-        try {
-            //DatagramPacket pack = receive();
-            byte[] buf = new byte[1024];
-            DatagramPacket packet = new DatagramPacket(buf, buf.length);
-            socket.receive(packet);
+//        try {
+//            //DatagramPacket pack = receive();
+//            byte[] buf = new byte[1024];
+//            DatagramPacket packet = new DatagramPacket(buf, buf.length);
+//            socket.receive(packet);
+//
+//            Log.d(TAG, String.valueOf(packet));
+//        } catch (Exception e) {
+//            Log.e(TAG, "didn't get response from socket");
+//        }
+//
+//        try {
+//            SecretKeySpec k = new SecretKeySpec(key, "AES");
+//
+//            Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+//            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+//            c.init(DECRYPT_MODE, k, new IvParameterSpec(iv));
+//            /* hopefully 128 bits. encrypt cmd */
+//            byte[] ciphertext = c.doFinal(cmd.getBytes());
+//            new sendbytes().execute(ciphertext); /* TODO: encrypt */
+//        } catch (NoSuchAlgorithmException e1) {
+//            e1.printStackTrace();
+//        } catch (NoSuchPaddingException e2) {
+//            e2.printStackTrace();
+//        } catch (InvalidAlgorithmParameterException e) {
+//            e.printStackTrace();
+//        } catch (InvalidKeyException e) {
+//            e.printStackTrace();
+//        } catch (BadPaddingException e) {
+//            e.printStackTrace();
+//        } catch (IllegalBlockSizeException e) {
+//            e.printStackTrace();
+//        }
 
-            Log.d(TAG, String.valueOf(packet));
-        } catch (Exception e) {
-            Log.e(TAG, "didn't get response from socket");
-        }
-
-        try {
-            SecretKeySpec k = new SecretKeySpec(key, "AES");
-
-            Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
-            c.init(DECRYPT_MODE, k, new IvParameterSpec(iv));
-            /* hopefully 128 bits. encrypt cmd */
-            byte[] ciphertext = c.doFinal(cmd.getBytes());
-            new sendbytes().execute(ciphertext); /* TODO: encrypt */
-        } catch (NoSuchAlgorithmException e1) {
-            e1.printStackTrace();
-        } catch (NoSuchPaddingException e2) {
-            e2.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        }
     }
 }
