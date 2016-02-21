@@ -9,23 +9,28 @@ Uses an Android app to send commands over UDP to and Arduino.
 # parts
 * Arduino
 * Arduino Wi-Fi Shield [1]
-* Android phone (firmware 23 or higher)
+* Android phone (firmware around 23 or higher)
 * Wi-Fi
-* Motor (currently set up for 3 wire servo)  
-[1]
-http://www.amazon.com/Arduino-WiFi-Shield/dp/B00MEKEBXG/ref=sr_1_2?ie=UTF8&qid=1456023452&sr=8-2&keywords=arduino+wifi+shield
+* Motor (Arduino code is currently set up for 3 wire servo)  
+[1]  
+http://www.amazon.com/Arduino-WiFi-Shield/dp/B00MEKEBXG
 
-# building
+# build
 To wire the Arduino connect the servo like this
-    White	Red	Black
-    pin 9	5v	gnd
 
-Mount the servo on top of the deadbolt so it can twist it. This is how we did it in the first model.
-alternatively, if you want to use the second case (work in progress), which is 3d printed:
+| Servo	| Arduino |
+| -----	| ------- |
+| White | pin 9	  |
+| Red	| 5v	  |
+| Black	| gnd	  |
+
+Make an enclosure.
+For our first one we mounted the servo on top of the deadbolt int a metal case. 
+Alternatively, if you want to use the second case (work in progress), which is 3d printed:
 * convert case/box.scad to stl
 * print using replicatorG
 
-# installation
+# install
 * Patch your arduino library to use printf if needed (used in current version) using this guide http://playground.arduino.cc/Main/Printf
 * open udp/udp.ino in the Ardiuno IDE, change the SSID and password to match yours. upload to Ardiuno.
 * Open android app inside android/ folder using Android Studio. upload to phone by clicking the play symbol (for debug) or another way.
