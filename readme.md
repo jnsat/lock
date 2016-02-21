@@ -11,16 +11,14 @@ Uses an Android app to send commands over UDP to and Arduino.
 * Arduino Wi-Fi Shield [1]
 * Android phone (firmware 23 or higher)
 * Wi-Fi
-* Motor (currently set up for 3 wire servo)
+* Motor (currently set up for 3 wire servo)  
 [1]
 http://www.amazon.com/Arduino-WiFi-Shield/dp/B00MEKEBXG/ref=sr_1_2?ie=UTF8&qid=1456023452&sr=8-2&keywords=arduino+wifi+shield
 
 # building
-Arduino wiring
-
-Servo is controlled by pin 9
-White	Red	Black
-pin 9	5v	gnd
+To wire the Arduino connect the servo like this
+    White	Red	Black
+    pin 9	5v	gnd
 
 Mount the servo on top of the deadbolt so it can twist it. This is how we did it in the first model.
 alternatively, if you want to use the second case (work in progress), which is 3d printed:
