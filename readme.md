@@ -65,10 +65,11 @@ Working on using AES CBC.
 | [ReplicatorG](http://replicat.org/download) | convert or send model to 3d printer |
 
 # external docs
-[http://developer.android.com/index.html](Android Developer)
-[https://www.arduino.cc/en/Reference/WiFi](Arduino WiFI)
-[http://www.openscad.org/cheatsheet/index.html](OpenSCAD cheatsheet)
-There was a nice Android UDP guide on Google code, I saved it in [info/AndroidUDP.md](info/AndroidUDP.md)
+[Android Developer](http://developer.android.com/index.html)  
+[Arduino WiFI](https://www.arduino.cc/en/Reference/WiFi)  
+[OpenSCAD cheatsheet](http://www.openscad.org/cheatsheet/index.html)  
+There was a nice Android UDP guide on Google code, I saved it in   
+[nfo/AndroidUDP.md](info/AndroidUDP.md)
  
 # thanks
 Thanks to Dr. Lin for the guidance and Marcus for the hardware
