@@ -69,7 +69,7 @@ Working on using AES CBC.
 [Arduino WiFI](https://www.arduino.cc/en/Reference/WiFi)  
 [OpenSCAD cheatsheet](http://www.openscad.org/cheatsheet/index.html)  
 There was a nice Android UDP guide on Google code, I saved it in   
-[nfo/AndroidUDP.md](info/AndroidUDP.md)
+[info/AndroidUDP.md](info/AndroidUDP.md)
  
 # thanks
 Thanks to Dr. Lin for the guidance and Marcus for the hardware
