@@ -5,6 +5,7 @@ lock
 
 Unlock a door wirelessly using your phone.
 Uses an Android app to send commands over UDP to and Arduino.
+![android key app screenshot](img/screenshot.png)
 
 # parts
 * Arduino
@@ -48,11 +49,6 @@ Working on using AES CBC.
 
 [X] Send random IV
 
-# screenshot
-![android key app screenshot](img/screenshot.png)
-
-Thanks to Dr. Lin for the guidance and Marcus for the hardware
-
 # todo
 * design nice case
 * 3d print the case
@@ -60,3 +56,19 @@ Thanks to Dr. Lin for the guidance and Marcus for the hardware
 * multi user?
 * battery
 
+# useful tools
+| What	| Why	|
+| ----- | ----- |
+| [Android Studio](http://developer.android.com/sdk/index.html) | dev and run android app |
+| [Arduino IDE](https://www.arduino.cc/en/Main/Software) | flash Arduino |
+| [OpenSCAD](http://www.openscad.org) | 3d model by programming |
+| [ReplicatorG](http://replicat.org/download) | convert or send model to 3d printer |
+
+# external docs
+http://developer.android.com/index.html
+https://www.arduino.cc/en/Reference/WiFi
+
+http://www.openscad.org/cheatsheet/index.html
+ 
+# thanks
+Thanks to Dr. Lin for the guidance and Marcus for the hardware
