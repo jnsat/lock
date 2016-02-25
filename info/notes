@@ -1,10 +1,10 @@
 Challenges:
-After trying to pad sprintf for a while i discover
+After trying to pad sprintf for a while I discover
 http://forum.arduino.cc/index.php?topic=179159.0
 "The variable width or precision field (an asterisk * symbol) is not realized and will to abort the output."
-Great
+Great. I went on to use sprintf with a buffer, see code.
 
-how to diff word docs
+How to diff word docs
 http://blog.martinfenner.org/2014/08/25/using-microsoft-word-with-git/
 
 # .gitattributes file in root folder of your git project
@@ -18,3 +18,14 @@ http://blog.martinfenner.org/2014/08/25/using-microsoft-word-with-git/
   wdiff = diff --word-diff=color --unified=1
 
 You can then use git wdiff important_file.docx to see the changes (with deletions in red and insertions in green), or git log -p --word-diff=color important_file.docx to see all changes over time.
+
+Wed Feb 24
+Recently I tried to print a case with a 3d printer. It's a fFlashForge. The first lid I printed was small and fragile. Up tried making a thicker one but I did not watch it and I giant glob of plastic built up on the extruder and the printer broke. It won't turn on. If you move turn a motor quickly, it acts as a generator and powers the LCD backlight. We sawed some of the plastic off. The power supply works, its LED is on. The power in on the motherboard looks burnt, and so does a chip that says
+  AMS1117
+  3.3 1308
+Yikes.
+The good thing is I looked that up and it's a voltage regulator, so maybe it blew up and saved the rest of the board.
+There is an overheat led that reportedly ligths up if you have voltage. It's off.
+
+I tired hooking up the Arduino to a battery. You can plug + to VIN and - to GND[1]. Two AA's doesn't seem to be enough -- the led lights up half way and I can't controll it with WiFi. 
+[1] see comments: http://letsmakerobots.com/content/add-9v-battery-snap-arduino-without-jack

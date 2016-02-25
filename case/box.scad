@@ -8,25 +8,28 @@ http://creativecommons.org/licenses/by-nc-sa/3.0/
 
 modifed by Joshua Satterfield
 */
+
+//translate ([10,1,0]) import("/Users/jns/lock/case/Arduino_Bumper_0006.stl");
+
 deadbolt_hole=1;
-deadbolt_diam=40;
+deadbolt_diam=53;
 /////////////// Paramètres - Parameters
 // - Epaisseur bords extérieurs - External border width
-External_borders_width=1.3;//[0.4:0.1:5.0]
+External_borders_width=4;//[0.4:0.1:5.0]
 // - Longeur interne - Internal lengh
-Internal_Length=100;
+Internal_Length=120;
 // - Largeur interne - Internal Width
-Internal_Width=55;
+Internal_Width=60;
 // - Hauteur interne - Internal Height
-Internal_Height=30;
+Internal_Height=45;
 // - Fermeture a vis ou mecanique - Screw closing or mecanical
 Closing_Type="Mecanical";// [Screw:Screw closing,Mecanical:Mecanical closing]
 // - Largeur de la fixation - Fixation width
-Fix_Width=10;//[5:1:20]
+Fix_Width=15;//[5:1:20]
 // - Longeur de la fixation - Fixation length
 Fix_Length=10;//[5:0.1:20]
 // - Longueur de tete de fixation - Head fixation length
-Fix_Head_Length=3;//[2:0.1:5]
+Fix_Head_Length=5;//[2:0.1:5]
 // - Longueur de vis - Screw Length
 Screw_Length=15;
 // - Epaisseur de vis (change aussi les angles de la boite) - Screw Width (this will also change the corners of the box)
@@ -46,7 +49,7 @@ Holes_number=25;//[4,9,16,25]
 // - Espace entre les trous - Space between holes
 Holes_space=2;//[1:0.1:5]
 // - Which part do you want to print
-part = "both";// [box:Box Only,cover:Cover Only,both:Box and Cover]
+part = "box";// [box:Box Only,cover:Cover Only,both:Box and Cover]
 /////////////// Paramètres FIN - Parameters END
 
 /* [Hidden] */
@@ -136,16 +139,9 @@ module Screw_hole(size=[1, 1, 1],diam_vis=1,haut_vis=1,bords=1,center=false)
   //generic hole - for deadbolt
  module hole(size=[1,1,1],diam=1,nombre=9,espace=2,haut=1,center=true)
  {
-     translate ([size[0]/2,size[1]/2,0]){
-        cylinder(d=diam,h=haut,center=false);
+     translate ([size[0]/2.3,size[1]/2,0],-artefact){
+        cylinder(d=diam,h=haut+2,center=true);
      }
-//     translate(center ? [0, 0, 0] : ([size[0]/2,size[1]/2,0]))
-//        for (x=[-((((sqrt(nombre)-1)*espace)+sqrt(nombre)*diam)/2):espace+diam:((((sqrt(nombre)-1)*espace)+sqrt(nombre)*diam)/2)],
-//             y=[-((((sqrt(nombre)-1)*espace)+sqrt(nombre)*diam)/2):espace+diam:((((sqrt(nombre)-1)*espace)+sqrt(nombre)*diam)/2)]) {
-//             translate([x,y,-artefact]) {
-//                 cylinder($fs=0.01,d=diam,h=haut,center=false);
-//             }
-//        }
  }
  
  //Pates de fixation
@@ -189,19 +185,42 @@ module box()
 {
     union() {
         difference() {
+            
             roundedRectangle(Interieur+[2*External_borders_width,2*External_borders_width,External_borders_width],Screw_width,center=false);
             translate([External_borders_width,External_borders_width,External_borders_width])
                 roundedRectangle(Interieur+[0,0,artefact],Screw_width,center=false);
             if(Holes)
                 trous_aeration([Interieur[0]+2*External_borders_width,Interieur[1]+2*External_borders_width,External_borders_width],Holes_size,Holes_number,Holes_space,External_borders_width+2*artefact);
+            // ports
+            portholes();
+            
             if(Closing_Type!="Screw")
                 trou_fixation(Interieur+[2*External_borders_width,2*External_borders_width,External_borders_width],Fix_Width,Fix_Length,Fix_Head_Length,External_borders_width,Screw_width);
         }
         if(Closing_Type=="Screw")
             support_vis(Interieur,Screw_width,Screw_Length,External_borders_width);
-    }
+    
+        }
+    
 }
-
+module portholes() {
+    ports_left=18;
+    usb_left=0;
+    usb_wid=12;
+    //usb_wid=30;
+    power_left=20;
+    power_wid=12;
+    #translate([Internal_Length,ports_left+usb_left,External_borders_width]) 
+    cube([2*External_borders_width+artefact,
+    usb_wid,
+    8])
+    ;
+    #translate([Internal_Length,ports_left+power_left,External_borders_width]) 
+    cube([2*External_borders_width+artefact,
+    power_wid,
+    8])
+    ;
+}
 //Couvercle - Box top
 module couvercle()
 {
@@ -220,7 +239,7 @@ module couvercle()
             roundedRectangle([Interieur[0]+2*External_borders_width,Interieur[1]+2*External_borders_width,External_borders_width],Screw_width,center=false);
             if(deadbolt_hole)
                 hole(
-                [(Interieur[0]+2*External_borders_width) /2,
+                [(Interieur[0]+2*External_borders_width) / 1.8,
                 Interieur[1]+2*External_borders_width,
                 External_borders_width],
             
@@ -234,10 +253,6 @@ module couvercle()
     }
 }
 
-module deadbolt_gear()
-{
-    
-}
 
 //Select which part to print
 if(part=="box") {
@@ -250,4 +265,3 @@ if(part=="box") {
         translate([-Interieur[0]-2*External_borders_width,0,0])  //on se deplace de la taille de la boite
             couvercle(); //Dessin Couvercle
 }
-
